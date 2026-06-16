@@ -1,0 +1,756 @@
+{
+  "config": {
+    "repo": "/home/r0b0tdgx/projects/hermes-concurrent-agents",
+    "files": 53,
+    "tokens": 45222,
+    "solver": "glm-5.2",
+    "explorer": "FastContext-1.0-4B-RL-NVFP4",
+    "max_turns": 6
+  },
+  "results": [
+    {
+      "question_id": "q1_deploy_vllm",
+      "question": "How do I deploy concurrent agents with a vLLM backend? What configuration is needed?",
+      "ground_truth": [
+        "config/vllm/docker-compose.yml",
+        "docs/deployment-guide.md",
+        "setup.sh",
+        "scripts/spawn.sh"
+      ],
+      "without_fc": {
+        "input": 49484,
+        "output": 2048,
+        "total": 51532,
+        "answer": "# Deploying Concurrent Agents with a vLLM Backend\n\nThis repository provides a complete, model-agnostic workflow for running multiple Hermes Agent workers concurrently against a single local vLLM endpoint. Here's the full deployment path with configuration details.\n\n## 1. Prerequisites\n\nThe `setup.sh` script checks for required tools at lines 80-105:\n\n```bash\n# Required:\n# - Hermes Agent v2.0+ (for profiles, kanban, delegation)\n# - tmux (for worker session isolation)\n# - python3 and curl (for scripts)\n```\n\nInstall Hermes Agent per `README.md` (Quick Start, line ~33):\n```bash\ncurl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash\n```\n\n## 2. Start the vLLM Backend\n\nYou have two options:\n\n### Option A: Docker Compose\n\nThe canonical configuration i",
+        "elapsed": 27.558629989624023
+      },
+      "with_fc": {
+        "fc_success": true,
+        "fc_turns": 4,
+        "fc_tool_calls": 9,
+        "fc_input": 26579,
+        "fc_output": 1498,
+        "fc_local_tokens": 7206,
+        "fc_citations": [
+          {
+            "file": "//127.0.0.1",
+            "start": 8000,
+            "end": 8000
+          },
+          {
+            "file": "//127.0.0.1",
+            "start": 8000,
+            "end": 8000
+          },
+          {
+            "file": "//127.0.0.1",
+            "start": 8000,
+            "end": 8000
+          },
+          {
+            "file": "//127.0.0.1",
+            "start": 8000,
+            "end": 8000
+          },
+          {
+            "file": "README.md",
+            "start": 1,
+            "end": 28
+          },
+          {
+            "file": "README.md",
+            "start": 30,
+            "end": 60
+          },
+          {
+            "file": "README.md",
+            "start": 61,
+            "end": 88
+          },
+          {
+            "file": "README.md",
+            "start": 89,
+            "end": 110
+          },
+          {
+            "file": "README.md",
+            "start": 112,
+            "end": 144
+          },
+          {
+            "file": "README.md",
+            "start": 153,
+            "end": 178
+          },
+          {
+            "file": "config/vllm/docker-compose.yml",
+            "start": 1,
+            "end": 26
+          },
+          {
+            "file": "scripts/setup.sh",
+            "start": 1,
+            "end": 60
+          },
+          {
+            "file": "scripts/check-backend.sh",
+            "start": 1,
+            "end": 92
+          },
+          {
+            "file": "scripts/verify-local-only.sh",
+            "start": 1,
+            "end": 89
+          },
+          {
+            "file": "scripts/spawn.sh",
+            "start": 1,
+            "end": 80
+          }
+        ],
+        "fc_tool_log": [
+          {
+            "turn": 1,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/README.md"
+            },
+            "result_tokens": 3119
+          },
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/SKILL.md",
+              "pattern": "vLLM|concurrent|deploy"
+            },
+            "result_tokens": 938
+          },
+          {
+            "turn": 1,
+            "name": "Glob",
+            "args": {
+              "directory": "/home/r0b0tdgx/projects/hermes-concurrent-agents",
+              "pattern": "**/*.py"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/config",
+              "pattern": "vllm|concurrent"
+            },
+            "result_tokens": 618
+          },
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts",
+              "pattern": "vllm|concurrent"
+            },
+            "result_tokens": 338
+          },
+          {
+            "turn": 2,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/setup.sh"
+            },
+            "result_tokens": 20
+          },
+          {
+            "turn": 2,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/check-backend.sh"
+            },
+            "result_tokens": 718
+          },
+          {
+            "turn": 3,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/check-backend.sh"
+            },
+            "result_tokens": 718
+          },
+          {
+            "turn": 3,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/verify-local-only.sh"
+            },
+            "result_tokens": 735
+          }
+        ],
+        "fc_final_answer": "Here's a comprehensive breakdown of how to deploy concurrent agents with a vLLM backend:\n\n---\n\n## How to Deploy Concurrent Agents with vLLM Backend\n\n### 1. **Prerequisites**\n- **Hermes Agent v2.0+** (installed via `curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash`)\n- **vLLM inference backend** running locally (or Ollama/SGLang as alternatives)\n- **tmux** for worker session isolation\n- **Unified-memory GPU** (e.g., NVIDIA GB10, DGX Spark, Apple Silicon M-series)\n\n### 2. **Key Environment Variables**\n| Variable | Default | Description |\n|---|---|---|\n| `HCA_ENDPOINT` | `http://127.0.0.1:8000/v1` | Base URL of your vLLM/OpenAI-compatible backend |\n| `HCA_MODEL_NAME` | | Served model name visible in `/v1/models` |\n| `HCA_PROFILES` | `creative-worker,coder-worker,research-worker,qa-worker,orchestrator` | Comma-separated list of profiles to spawn |\n| `HCA_PROVIDER_NAME` | `local-vllm` | Provider key for profile config |\n\n### 3. **vLLM Conf",
+        "fc_elapsed": 27.752965211868286,
+        "solver_input": 5405,
+        "solver_output": 1478,
+        "solver_total": 6883,
+        "solver_answer": "# Deploying Concurrent Agents with a vLLM Backend\n\n## Overview\n\nThe system runs multiple Hermes Agent workers concurrently against a single local vLLM endpoint. The vLLM backend handles continuous batching, so parallel workers share one loaded model server. See `README.md:5-7` and the architecture diagram at `README.md:9-28`.\n\n## Deployment Steps\n\n### 1. Start the vLLM Backend\n\nUse the model-agnostic compose file at `config/vllm/docker-compose.yml:1-26`. You must set required environment variables before bringing it up:\n\n**Required:**\n- `HCA_MODEL_PATH` \u2014 path or HuggingFace ID of the model\n- `HCA_MODEL_NAME` \u2014 served model name visible in `/v1/models`\n\n**Optional tuning:**\n- `HCA_VLLM_IMAGE` (default: `vllm/vllm-openai:latest`)\n- `HCA_MAX_MODEL_LEN` (default: `65536`)\n- `HCA_MAX_NUM_SEQS`",
+        "solver_elapsed": 23.410261869430542
+      },
+      "reduction_pct": 86.64325079562214
+    },
+    {
+      "question_id": "q2_fault_injection",
+      "question": "What is the fault injection testing mechanism and how does it work?",
+      "ground_truth": [
+        "scripts/fault-injection-test.sh",
+        "docs/durability-tests.md"
+      ],
+      "without_fc": {
+        "input": 49479,
+        "output": 1207,
+        "total": 50686,
+        "answer": "# Fault Injection Testing Mechanism\n\n## Overview\n\nThe fault injection testing mechanism is implemented in **`scripts/fault-injection-test.sh`** and provides a non-destructive harness for validating the resilience of the concurrent agent system. It's designed to exercise crash/restart scenarios, benchmark artifact generation, and kanban smoke flows in a prefix-scoped, isolated manner.\n\n## Core Design Principles\n\n### 1. Non-Destructive by Default (Dry-Run)\nThe harness defaults to a dry-run mode that documents exactly what would be tested without executing destructive operations:\n\n```bash\n# From scripts/fault-injection-test.sh, lines 5-6\n# Non-destructive fault-injection harness. Default dry-run documents exactly what\n# would be tested. Use --execute to actually run prefix-scoped spawn/kill c",
+        "elapsed": 19.84205460548401
+      },
+      "with_fc": {
+        "fc_success": true,
+        "fc_turns": 4,
+        "fc_tool_calls": 10,
+        "fc_input": 3290,
+        "fc_output": 582,
+        "fc_local_tokens": 20,
+        "fc_citations": [],
+        "fc_tool_log": [
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "pattern": "fault_inject|fault_injection",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "pattern": "inject_fault|inject_error|fault_inject",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 1,
+            "name": "Glob",
+            "args": {
+              "pattern": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/*.py"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 1,
+            "name": "Glob",
+            "args": {
+              "pattern": "/home/r0b0tdgx/projects/hermes-concurrent-agents/benchmarks/*.py"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 2,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "pattern": "fault_inject|fault_injection",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 2,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "pattern": "inject_fault|inject_error|fault_inject",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 2,
+            "name": "Glob",
+            "args": {
+              "pattern": "/home/r0b0tdgx/projects/hermes-concurrent-agents/*.py"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 3,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "pattern": "fault_inject|fault_injection",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 3,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "pattern": "inject_fault|inject_error|fault_inject",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 3,
+            "name": "Glob",
+            "args": {
+              "pattern": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/*"
+            },
+            "result_tokens": 2
+          }
+        ],
+        "fc_final_answer": "<tool_call>\n{\"name\": \"Grep\", \"arguments\": {\"output_mode\": \"files_with_matches\", \"pattern\": \"fault_inject|fault_injection\", \"path\": \"/home/r0b0tdgx/projects/hermes-concurrent-agents\"}}\n</tool_call>\n<tool_call>\n{\"name\": \"Grep\", arguments={\"output_mode\": \"files_with_matches\", \"pattern\": \"inject_fault|inject_error|fault_inject\", \"path\": \"/home/r0b0tdgx/projects/hermes-concurrent-agents\"}}\n</tool_call>",
+        "fc_elapsed": 9.039661884307861,
+        "solver_input": 65,
+        "solver_output": 410,
+        "solver_total": 475,
+        "solver_answer": "I apologize, but I am unable to provide a detailed answer because the repository context was not provided (the context field shows \"(no citations)\"). \n\nTo explain the fault injection testing mechanism and cite specific files and line numbers, please provide the relevant source code, repository structure, or documentation.",
+        "solver_elapsed": 8.247398614883423
+      },
+      "reduction_pct": 99.0628575938129
+    },
+    {
+      "question_id": "q3_profile_architecture",
+      "question": "How does the orchestrator profile differ from worker profiles?",
+      "ground_truth": [
+        "profiles/orchestrator/SOUL.md",
+        "profiles/coder-worker/SOUL.md",
+        "profiles/qa-worker/SOUL.md"
+      ],
+      "without_fc": {
+        "input": 49477,
+        "output": 2048,
+        "total": 51525,
+        "answer": "# Orchestrator vs. Worker Profiles\n\nThe orchestrator profile differs from worker profiles in **purpose, behavioral rules, tooling emphasis, and workflow structure**, but shares identical technical configuration (config template, profile structure, spawn mechanism). The differences live almost entirely in each profile's `SOUL.md`.\n\n---\n\n## 1. Fundamental Purpose: Routing vs. Execution\n\n**README.md** (`profiles` section) frames the split:\n\n| Profile | Role | Best For |\n|---------|------|----------|\n| `creative-worker` | Long-form generation | Stories, scripts, reports |\n| `coder-worker` | Implementation | Code, APIs, scripts |\n| `research-worker` | Analysis & research | Papers, comparisons |\n| `qa-worker` | Testing & review | Code review, testing |\n| `orchestrator` | **Task routing** | **Kan",
+        "elapsed": 29.58122968673706
+      },
+      "with_fc": {
+        "fc_success": true,
+        "fc_turns": 3,
+        "fc_tool_calls": 4,
+        "fc_input": 5702,
+        "fc_output": 873,
+        "fc_local_tokens": 1907,
+        "fc_citations": [
+          {
+            "file": "scripts/spawn.sh",
+            "start": 57,
+            "end": 58
+          },
+          {
+            "file": "scripts/spawn.sh",
+            "start": 90,
+            "end": 142
+          },
+          {
+            "file": "docs/current-state-report.md",
+            "start": 27,
+            "end": 29
+          },
+          {
+            "file": "docs/workflow-patterns.md",
+            "start": 34,
+            "end": 41
+          },
+          {
+            "file": "docs/use-cases.md",
+            "start": 17,
+            "end": 17
+          },
+          {
+            "file": "setup.sh",
+            "start": 96,
+            "end": 96
+          },
+          {
+            "file": "PROFILES.md",
+            "start": 0,
+            "end": 0
+          }
+        ],
+        "fc_tool_log": [
+          {
+            "turn": 1,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/PROFILES.md"
+            },
+            "result_tokens": 19
+          },
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents",
+              "pattern": "orchestrator"
+            },
+            "result_tokens": 1250
+          },
+          {
+            "turn": 2,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/spawn.sh",
+              "pattern": "orchestrator|orchestrator.*profile|profile.*orchestrator"
+            },
+            "result_tokens": 52
+          },
+          {
+            "turn": 2,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/spawn.sh",
+              "pattern": "worker|profiles|worker.*profile|profile.*worker"
+            },
+            "result_tokens": 586
+          }
+        ],
+        "fc_final_answer": "Here's a clear breakdown of how the orchestrator profile differs from worker profiles:\n\n---\n\n### Key Differences\n\n| Aspect | `orchestrator` | `creative-worker` / `coder-worker` / `research-worker` / `qa-worker` |\n|---|---|---|\n| **Primary Role** | Planning, decomposition, routing, acceptance checks | Implementation, research, QA execution |\n| **Task Flow** | Creates tasks, delegates to sub-agents, accepts/rejects results | Receives tasks, executes them, reports back |\n| **Profile Rotation** | Included in default rotation list (`DEFAULT_PROFILES`) | Same default rotation list |\n| **Briefing Message** | \"You are a worker agent (profile: orchestrator). Claim and execute tasks from the kanban board...\" | Same template, but with their specific profile name |\n| **Usage in Scripts** | Spawns `tmux` sessions for all worker profiles; `DEFAULT_PROFILES` includes it | Spawns `tmux` sessions; profile names match those listed |\n\n---\n\n### How It Works in Practice\n\n1. **`DEFAULT_PROFILES`** (line 57 ",
+        "fc_elapsed": 14.164189577102661,
+        "solver_input": 361,
+        "solver_output": 1296,
+        "solver_total": 1657,
+        "solver_answer": "Based on the provided repository context, the `orchestrator` profile differs from standard worker profiles primarily in its role as a manager, planner, and aggregator, rather than acting as an individual contributor. \n\nHere are the specific differences detailed in the codebase:\n\n**1. Task Delegation and Hierarchy**\nUnlike worker profiles that act as individual contributors executing tasks, the orchestrator sits at the top of the hierarchy and delegates tasks. \n* In `docs/current-state-report.md:27-28`, the architecture shows that the system flows up to the `orchestrator`, which then `-> delegate_task subagents when needed`. \n\n**2. Workflow Stages (Planning vs. Execution)**\nIn the established workflow patterns, the orchestrator is assigned to the high-level planning phase, whereas worker pr",
+        "solver_elapsed": 21.469604969024658
+      },
+      "reduction_pct": 96.7840853954391
+    },
+    {
+      "question_id": "q4_benchmarking",
+      "question": "What benchmarking methods are available and what metrics do they capture?",
+      "ground_truth": [
+        "scripts/benchmark.sh",
+        "docs/benchmarking.md"
+      ],
+      "without_fc": {
+        "input": 49479,
+        "output": 1908,
+        "total": 51387,
+        "answer": "# Benchmarking Methods and Metrics in hermes-concurrent-agents\n\n## Primary Benchmarking Script\n\nThe core benchmarking tool is **`scripts/benchmark.sh`**, which offers two distinct methods:\n\n### Method 1: Dry-Run Mode (CI/Static Validation)\n\n```bash\nbash scripts/benchmark.sh --dry-run --levels 1,2\n```\n\nThis method validates artifact generation without requiring a GPU backend. As stated in `docs/benchmarking.md` (lines 7-9), it produces deterministic synthetic artifacts. The script generates synthetic responses when `--dry-run` is set (`scripts/benchmark.sh`, around lines 152-160):\n\n```python\n# Dry-run produces synthetic token counts\ncompletion = 700 + i\nprint(json.dumps({\"id\": f\"dry-{level}-{i}\", \"object\": \"chat.completion\", \"choices\": [{\"message\": {\"role\": \"assistant\", \"content\": \"dry run\"",
+        "elapsed": 26.930952310562134
+      },
+      "with_fc": {
+        "fc_success": true,
+        "fc_turns": 3,
+        "fc_tool_calls": 7,
+        "fc_input": 8139,
+        "fc_output": 1258,
+        "fc_local_tokens": 4002,
+        "fc_citations": [
+          {
+            "file": "//127.0.0.1",
+            "start": 8000,
+            "end": 8000
+          },
+          {
+            "file": "scripts/benchmark.sh",
+            "start": 1,
+            "end": 248
+          },
+          {
+            "file": "docs/benchmarking.md",
+            "start": 1,
+            "end": 41
+          }
+        ],
+        "fc_tool_log": [
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents",
+              "pattern": "benchmark"
+            },
+            "result_tokens": 317
+          },
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents",
+              "pattern": "metric|Metric|metrics|Metrics"
+            },
+            "result_tokens": 162
+          },
+          {
+            "turn": 1,
+            "name": "Glob",
+            "args": {
+              "pattern": "/home/r0b0tdgx/projects/hermes-concurrent-agents/benchmarks/*"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 1,
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents",
+              "pattern": "def benchmark|def run_benchmark|def evaluate"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 2,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/benchmark.sh"
+            },
+            "result_tokens": 2759
+          },
+          {
+            "turn": 2,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/docs/benchmarking.md",
+              "pattern": "benchmark|metric|run_benchmark|def"
+            },
+            "result_tokens": 386
+          },
+          {
+            "turn": 2,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/docs/benchmarking.md",
+              "pattern": "def|run_benchmark|benchmark"
+            },
+            "result_tokens": 374
+          }
+        ],
+        "fc_final_answer": "Here's a comprehensive breakdown of the benchmarking methods and metrics available:\n\n---\n\n### Benchmarking Method: `scripts/benchmark.sh`\n\n**Invocation:**\n```bash\nbash scripts/benchmark.sh [OPTIONS]\n```\n\n**Options:**\n| Flag | Default | Description |\n|---|---|---|\n| `--endpoint` | `http://127.0.0.1:8000/v1` | OpenAI-compatible base URL |\n| `--model` | `local-model` | Model name to serve |\n| `--levels` | `1,2,3,4,6` | Concurrency levels to sweep |\n| `--prompt` | Fixed prompt | Benchmark prompt text |\n| `--output-dir` | `benchmarks` | Parent output directory |\n| `--timeout` | `300` | Per-level timeout in seconds |\n| `--dry-run` | `false` | Simulate dry run without calling backend |\n\n---\n\n### Metrics Captured\n\nEach concurrency level generates a structured `level-X.json` artifact and populates `summary.csv`. The full set of metrics includes:\n\n| Category | Metric | Unit | Source |\n|---|---|---|---|\n| **Timing** | `total_elapsed_s` | seconds | `summary.csv` |\n| | `requests` | count | per leve",
+        "fc_elapsed": 21.40692639350891,
+        "solver_input": 4618,
+        "solver_output": 2048,
+        "solver_total": 6666,
+        "solver_answer": "# Benchmarking Methods and Captured Metrics\n\nThe repository exposes a single reproducible concurrency benchmark, `scripts/benchmark.sh`, documented in `docs/benchmarking.md`. It supports two operating modes and produces a structured artifact bundle.\n\n## Available Methods\n\n### 1. Dry-run / CI validation mode\nA no-backend mode that generates deterministic synthetic artifacts, allowing validation of artifact generation in CI without a GPU backend.\n\n- Activated via `--dry-run` (`scripts/benchmark.sh:24`, `:64`).\n- When set, `DRY_RUN=true` (`scripts/benchmark.sh:35`) and the backend reachability check is skipped (`scripts/benchmark.sh:91`).\n- Synthetic responses are generated inline by Python with deterministic token counts (`scripts/benchmark.sh:132-140`), e.g. `completion_tokens = 700 + i`.\n-",
+        "solver_elapsed": 30.921138048171997
+      },
+      "reduction_pct": 87.02784751007064
+    },
+    {
+      "question_id": "q5_ci_pipeline",
+      "question": "How is the CI/CD pipeline configured? What checks run on push?",
+      "ground_truth": [
+        ".github/workflows/ci.yml"
+      ],
+      "without_fc": {
+        "input": 49481,
+        "output": 1335,
+        "total": 50816,
+        "answer": "# CI/CD Pipeline Configuration\n\nThe actual `.github/workflows/ci.yml` file is referenced throughout the repository but its contents are **not included** in the provided context. However, multiple files describe what the CI pipeline runs. Here is a detailed reconstruction based on those references:\n\n## CI Workflow Checks (from `CHANGELOG.md`)\n\nThe `CHANGELOG.md` (v1.0.1 release notes) explicitly enumerates the checks the CI workflow runs:\n\n> \"CI workflow for shell syntax, docs validation, dry-run benchmark, kanban smoke dry-run, and fault-injection dry-run.\"\n\n## Equivalent Local Commands (from `CONTRIBUTING.md` and `docs/grade/evidence-map.md`)\n\nBoth `CONTRIBUTING.md` and `docs/grade/evidence-map.md` specify the exact commands that correspond to the CI checks:\n\n```bash\nbash -n setup.sh scri",
+        "elapsed": 21.65799832344055
+      },
+      "with_fc": {
+        "fc_success": true,
+        "fc_turns": 6,
+        "fc_tool_calls": 14,
+        "fc_input": 49744,
+        "fc_output": 1512,
+        "fc_local_tokens": 11642,
+        "fc_citations": [
+          {
+            "file": "scripts/check-backend.sh",
+            "start": 1,
+            "end": 92
+          },
+          {
+            "file": "scripts/verify-local-only.sh",
+            "start": 1,
+            "end": 84
+          },
+          {
+            "file": ".hermes/reviews/2026-05-26-educational-x-video-plan-review.md",
+            "start": 1,
+            "end": 269
+          },
+          {
+            "file": ".hermes/archive/demos-removed-20260526T023531Z/demos/mm27-local-agent-team/create-optimized-demo-tasks.sh",
+            "start": 1,
+            "end": 110
+          },
+          {
+            "file": "scripts/benchmark.sh",
+            "start": 0,
+            "end": 0
+          },
+          {
+            "file": "scripts/health-monitor.sh",
+            "start": 0,
+            "end": 0
+          },
+          {
+            "file": "scripts/spawn.sh",
+            "start": 0,
+            "end": 0
+          }
+        ],
+        "fc_tool_log": [
+          {
+            "turn": 1,
+            "name": "Glob",
+            "args": {
+              "pattern": "config/**/*"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 1,
+            "name": "Glob",
+            "args": {
+              "pattern": "scripts/**/*"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 1,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/.hermes"
+            },
+            "result_tokens": 24
+          },
+          {
+            "turn": 1,
+            "name": "Read",
+            "args": {
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/README.md"
+            },
+            "result_tokens": 3119
+          },
+          {
+            "turn": 2,
+            "name": "Glob",
+            "args": {
+              "pattern": "scripts/check-backend.sh"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 2,
+            "name": "Glob",
+            "args": {
+              "pattern": "scripts/verify-local-only.sh"
+            },
+            "result_tokens": 2
+          },
+          {
+            "turn": 2,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/.hermes",
+              "pattern": "check|ci|pipeline|push|pull"
+            },
+            "result_tokens": 1250
+          },
+          {
+            "turn": 3,
+            "name": "Read",
+            "args": {
+              "limit": 100,
+              "offset": 1,
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/check-backend.sh"
+            },
+            "result_tokens": 718
+          },
+          {
+            "turn": 3,
+            "name": "Read",
+            "args": {
+              "limit": 100,
+              "offset": 1,
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/scripts/verify-local-only.sh"
+            },
+            "result_tokens": 735
+          },
+          {
+            "turn": 3,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/.hermes",
+              "pattern": "pull|push|ci|check|test|lint|format"
+            },
+            "result_tokens": 1250
+          },
+          {
+            "turn": 4,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/.hermes/reviews",
+              "pattern": "pull|push|ci|check|test|format|lint"
+            },
+            "result_tokens": 1250
+          },
+          {
+            "turn": 4,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/.hermes",
+              "pattern": "pull_request|push.*check|github.*action|ci.*check|check.*ci"
+            },
+            "result_tokens": 1019
+          },
+          {
+            "turn": 5,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/.hermes/reviews",
+              "pattern": "pull_request|push.*check|github|ci"
+            },
+            "result_tokens": 1250
+          },
+          {
+            "turn": 5,
+            "name": "Grep",
+            "args": {
+              "output_mode": "content",
+              "path": "/home/r0b0tdgx/projects/hermes-concurrent-agents/.hermes",
+              "pattern": "pull_request|push.*check|github.*action|check.*ci"
+            },
+            "result_tokens": 1019
+          }
+        ],
+        "fc_final_answer": "Here is a comprehensive breakdown of the CI/CD pipeline and checks:\n\n---\n\n## CI/CD Pipeline & Checks\n\n### 1. Local Development Checks (Run on `git push`)\nWhen developers push code, the following checks are run locally before merging:\n\n#### `check-backend.sh` \u2014 Validates Local Model Endpoint\n- **`--endpoint` / `--model`**: Validates the OpenAI-compatible backend URL and model name\n- **`--timeout`**: Sets a 30s curl timeout for the `/v1/chat/completions` request\n- **`--dry-run`**: Prints checks without calling the backend (useful for testing)\n- **Checks performed**:\n  - Confirms the expected model name exists in `/models` list\n  - Sends a `LOCAL_BACKEND_READY` test message to verify the endpoint responds correctly\n  - **No automated GitHub/GitLab CI on push** \u2014 this is a local guard run via `bash scripts/check-backend.sh`\n\n#### `verify-local-only.sh` \u2014 Validates Worker Profiles\n- **`--profiles`**: Specifies which profiles (`creative-worker`, `coder-worker`, etc.) to check\n- **`--endpoint",
+        "fc_elapsed": 30.28646969795227,
+        "solver_input": 14771,
+        "solver_output": 1175,
+        "solver_total": 15946,
+        "solver_answer": "## CI/CD Pipeline Configuration\n\nBased on the provided repository context, **there is no CI/CD pipeline configuration file included**. The context does not contain any of the standard CI/CD definition files such as:\n\n- `.github/workflows/*.yml` (GitHub Actions)\n- `.gitlab-ci.yml` (GitLab CI)\n- `.circleci/config.yml` (CircleCI)\n- `Jenkinsfile`\n- `.travis.yml`\n\n## What the Context Does Show\n\nThe repository contains several scripts that appear **designed to be CI-friendly** through their `--dry-run` modes, but none are wired into a visible pipeline configuration:\n\n### Scripts with explicit CI intent\n\n1. **`scripts/benchmark.sh`** (line 24-25, 94-97) \u2014 The `--dry-run` flag is explicitly described for CI use:\n   ```\n   --dry-run            Do not call backend; generate deterministic synthetic a",
+        "solver_elapsed": 19.254791975021362
+      },
+      "reduction_pct": 68.62011964735515
+    }
+  ],
+  "summary": {
+    "total_a": 255946,
+    "total_b": 31627,
+    "reduction_pct": 87.6430965906871
+  }
+}

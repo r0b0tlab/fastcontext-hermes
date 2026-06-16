@@ -1,0 +1,590 @@
+{
+  "config": {
+    "repo": "/home/r0b0tdgx/projects/hermes-concurrent-agents",
+    "repo_files": 53,
+    "repo_tokens": 45222,
+    "solver": "glm-5.2",
+    "explorer": "FastContext-1.0-4B-RL-NVFP4",
+    "max_turns": 6
+  },
+  "results": [
+    {
+      "question_id": "q1_deploy_vllm",
+      "question": "How do I deploy concurrent agents with a vLLM backend? What configuration is needed?",
+      "without_fc": {
+        "tokens": 50707,
+        "answer": "# Deploying Concurrent Agents with a vLLM Backend\n\nBased on the repository, here's the complete deployment path:\n\n## 1. Set Environment Variables\n\nChoose your model and endpoint, then use the same values across all scripts (`docs/deployment-guide.md`, lines 14-20):\n\n```bash\nexport HCA_ENDPOINT=http://127.0.0.1:8000/v1\nexport HCA_MODEL_NAME=your-served-model-name\nexport HCA_PROVIDER_NAME=local-vllm\n```\n\nThe model name **must** match the id returned by `curl \"$HCA_ENDPOINT/models\"`.\n\n## 2. Start t"
+      },
+      "with_fc": {
+        "success": false,
+        "turns": 6,
+        "tool_calls": [
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts/*.py"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "vllm|vLLM|vLm",
+              "path": "/hermes-concurrent-agents/scripts",
+              "output_mode": "files_with_matches"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/scripts/deploy_vllm.py"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/scripts"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts/*"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/scripts"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts*"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts*"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/*"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "vllm",
+              "path": "/hermes-concurrent-agents",
+              "output_mode": "files_with_matches"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "path": "/hermes-concurrent-agents",
+              "pattern": "vllm"
+            }
+          }
+        ],
+        "citations": [],
+        "fc_tokens": 8798,
+        "solver_tokens": 0,
+        "answer": "FC failed"
+      },
+      "ground_truth": [
+        "config/vllm/docker-compose.yml",
+        "docs/deployment-guide.md",
+        "setup.sh",
+        "scripts/spawn.sh"
+      ],
+      "reduction_pct": 0.0
+    },
+    {
+      "question_id": "q2_fault_injection",
+      "question": "What is the fault injection testing mechanism and how does it work?",
+      "without_fc": {
+        "tokens": 50331,
+        "answer": "# Fault Injection Testing Mechanism\n\nThe fault injection testing mechanism is implemented in **`scripts/fault-injection-test.sh`** and documented in **`docs/durability-tests.md`**.\n\n## Purpose\n\nThe mechanism provides a non-destructive validation harness that exercises crash/restart scenarios for the concurrent agent system. It validates that workers can be killed and restarted safely within the kanban-coordinated architecture.\n\n## How It Works\n\nThe script at **`scripts/fault-injection-test.sh`**"
+      },
+      "with_fc": {
+        "success": false,
+        "turns": 6,
+        "tool_calls": [
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts/*.js"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts/*"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "fault",
+              "path": "/hermes-concurrent-agents/scripts",
+              "output_mode": "files_with_matches"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/scripts"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts/**/*"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "path": "/hermes-concurrent-agents",
+              "pattern": "fault"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "output_mode": "files_with_matches",
+              "path": "/hermes-concurrent-agents",
+              "pattern": "fault"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/README.md"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/CONTRIBUTING.md"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/scripts"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/scripts"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          }
+        ],
+        "citations": [],
+        "fc_tokens": 9091,
+        "solver_tokens": 0,
+        "answer": "FC failed"
+      },
+      "ground_truth": [
+        "scripts/fault-injection-test.sh",
+        "docs/durability-tests.md"
+      ],
+      "reduction_pct": 0.0
+    },
+    {
+      "question_id": "q3_profile_architecture",
+      "question": "How does the orchestrator profile differ from worker profiles (coder, creative, qa, research)?",
+      "without_fc": {
+        "tokens": 50379,
+        "answer": "Based on the repository context, the orchestrator profile differs from worker profiles in several key ways:\n\n## 1. Role and Core Function\n\nThe orchestrator's primary job is **decomposition and routing**, not execution. As stated in `profiles/orchestrator/SOUL.md`:\n\n> \"Your job is to decompose complex goals into tasks and route them to specialist workers via the kanban board.\"\n\nIn contrast, each worker profile specializes in **executing** specific types of work:\n- **coder-worker**: code implement"
+      },
+      "with_fc": {
+        "success": false,
+        "turns": 6,
+        "tool_calls": [
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "orchestrator",
+              "path": "/hermes-concurrent-agents",
+              "output_mode": "files_with_matches"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "coder|creative|qa|research",
+              "path": "/hermes-concurrent-agents",
+              "output_mode": "files_with_matches"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "*/**/*.py",
+              "directory": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**/*.py",
+              "directory": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**/*.js",
+              "directory": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**/*",
+              "directory": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**/*",
+              "directory": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          }
+        ],
+        "citations": [],
+        "fc_tokens": 8635,
+        "solver_tokens": 0,
+        "answer": "FC failed"
+      },
+      "ground_truth": [
+        "profiles/orchestrator/SOUL.md",
+        "profiles/coder-worker/SOUL.md",
+        "profiles/qa-worker/SOUL.md"
+      ],
+      "reduction_pct": 0.0
+    },
+    {
+      "question_id": "q4_benchmarking",
+      "question": "What benchmarking methods are available and what metrics do they capture?",
+      "without_fc": {
+        "tokens": 51381,
+        "answer": "# Benchmarking Methods and Metrics\n\n## Primary Benchmark Script\n\nThe repository provides **`scripts/benchmark.sh`** as the main benchmarking tool. It performs reproducible concurrency sweeps against any OpenAI-compatible local backend.\n\n### Methods Available\n\n**1. CI / Dry-Run Mode** (`docs/benchmarking.md`)\n\nGenerates deterministic synthetic artifacts without requiring a GPU backend:\n\n```bash\nbash scripts/benchmark.sh --dry-run --levels 1,2\n```\n\nThe dry-run path emits synthetic responses with d"
+      },
+      "with_fc": {
+        "success": false,
+        "turns": 6,
+        "tool_calls": [
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "benchmarks/*.py",
+              "directory": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "benchmark|Bench",
+              "path": "/hermes-concurrent-agents/scripts",
+              "output_mode": "files_with_matches",
+              "glob": "*.py"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "benchmark|Bench",
+              "path": "/hermes-concurrent-agents/scripts",
+              "output_mode": "files_with_matches",
+              "glob": "*.js"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "benchmark|Bench",
+              "path": "/hermes-concurrent-agents",
+              "output_mode": "files_with_matches",
+              "glob": "*.py"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "benchmark|Bench",
+              "path": "/hermes-concurrent-agents",
+              "output_mode": "files_with_matches",
+              "glob": "*.js"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**/*.py",
+              "directory": "/hermes"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**/*.py",
+              "directory": "/hermes"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**/*.js",
+              "directory": "/hermes"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**",
+              "directory": "/hermes"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "benchmark|Bench",
+              "path": "/hermes",
+              "output_mode": "files_with_matches",
+              "glob": "*.py"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "benchmark|Bench",
+              "path": "/hermes",
+              "output_mode": "files_with_matches",
+              "glob": "*.js"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "**",
+              "directory": "/hermes-concurrent-agents"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "benchmark|Bench",
+              "path": "/hermes-concurrent-agents",
+              "output_mode": "files_with_matches",
+              "glob": "*.py"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/README.md"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/SKILL.md"
+            }
+          }
+        ],
+        "citations": [],
+        "fc_tokens": 10200,
+        "solver_tokens": 0,
+        "answer": "FC failed"
+      },
+      "ground_truth": [
+        "scripts/benchmark.sh",
+        "docs/benchmarking.md"
+      ],
+      "reduction_pct": 0.0
+    },
+    {
+      "question_id": "q5_ci_pipeline",
+      "question": "How is the CI/CD pipeline configured? What checks run on push?",
+      "without_fc": {
+        "tokens": 50684,
+        "answer": "# CI/CD Pipeline Configuration\n\nThe repository references a CI workflow at `.github/workflows/ci.yml`, though the actual file content is **not included** in the provided repository context. However, the checks it runs are documented across several files:\n\n## Documented CI Checks\n\nAccording to `CHANGELOG.md` (lines 6-9), the CI workflow runs:\n\n1. **Shell syntax validation**\n2. **Docs validation**\n3. **Dry-run benchmark**\n4. **Kanban smoke dry-run**\n5. **Fault-injection dry-run**\n\n## Pre-PR Comman"
+      },
+      "with_fc": {
+        "success": false,
+        "turns": 6,
+        "tool_calls": [
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/README.md"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts/*"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "push|pull_request|merge|ci|workflow|github",
+              "path": "/hermes-concurrent-agents/.github",
+              "output_mode": "files_with_matches"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "push|pull_request|merge|ci|workflow",
+              "path": "/hermes-concurrent-agents/.github/workflows",
+              "output_mode": "files_with_matches"
+            }
+          },
+          {
+            "name": "Grep",
+            "args": {
+              "pattern": "push|pull_request|merge|ci|workflow",
+              "path": "/hermes-concurrent-agents/.github",
+              "output_mode": "files_with_matches"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/CHANGELOG.md"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts/*"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/setup.sh"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/*.py"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/scripts*"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/.github"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents/scripts"
+            }
+          },
+          {
+            "name": "Glob",
+            "args": {
+              "pattern": "/hermes-concurrent-agents/**"
+            }
+          },
+          {
+            "name": "Read",
+            "args": {
+              "path": "/hermes-concurrent-agents"
+            }
+          }
+        ],
+        "citations": [],
+        "fc_tokens": 9741,
+        "solver_tokens": 0,
+        "answer": "FC failed"
+      },
+      "ground_truth": [
+        ".github/workflows/ci.yml"
+      ],
+      "reduction_pct": 0.0
+    }
+  ],
+  "summary": {
+    "total_without": 253482,
+    "total_with": 0,
+    "reduction_pct": 100.0
+  }
+}
