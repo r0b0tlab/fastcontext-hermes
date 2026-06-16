@@ -136,7 +136,7 @@ def main():
     # ─── Calibration ─────────────────────────────────────────────────
     print(f"[4/6] Calibrating with cnn_dailymail ({args.calib_samples} samples)...")
     calib_data = load_dataset(
-        "cnn_dailymail", "3.0.0", split=f"train[:{args.calib_samples}]"
+        "abisee/cnn_dailymail", "3.0.0", split=f"train[:{args.calib_samples}]"
     )
 
     def forward_loop(model):

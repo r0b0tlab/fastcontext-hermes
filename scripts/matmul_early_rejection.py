@@ -106,33 +106,34 @@ def main():
     results = []
 
     # Largest layers by parameter count (these dominate inference time)
+    # nn.functional.linear(x, w): x=[B,T,in], w=[out,in]
+    # Qwen3-4B: hidden=2560, intermediate=9728, n_heads=32, n_kv=8, head_dim=128
 
-    # 1. MLP down_proj: [intermediate, hidden] = [9728, 2560]
-    #    This is the biggest single matmul in the MLP
+    # 1. MLP down_proj: maps intermediate→hidden, weight [2560, 9728]
     results.append(benchmark_matmul(
-        "mlp_down_proj [9728, 2560]",
-        w_shape=(9728, 2560),
+        "mlp_down_proj [2560, 9728]",
+        w_shape=(2560, 9728),
         x_shape=(*batch_shape, 9728),
     ))
 
-    # 2. MLP gate_proj: [hidden, intermediate] = [2560, 9728]
+    # 2. MLP gate_proj: maps hidden→intermediate, weight [9728, 2560]
     results.append(benchmark_matmul(
-        "mlp_gate_proj [2560, 9728]",
-        w_shape=(2560, 9728),
+        "mlp_gate_proj [9728, 2560]",
+        w_shape=(9728, 2560),
         x_shape=(*batch_shape, 2560),
     ))
 
-    # 3. Attention Q proj: [hidden, n_heads*head_dim] = [2560, 4096]
+    # 3. Attention Q proj: maps hidden→n_heads*head_dim, weight [4096, 2560]
     results.append(benchmark_matmul(
-        "attn_q_proj [2560, 4096]",
-        w_shape=(2560, 4096),
-        x_shape=(*batch_shape, 2560),
-    ))
-
-    # 4. Attention O proj: [n_heads*head_dim, hidden] = [4096, 2560]
-    results.append(benchmark_matmul(
-        "attn_o_proj [4096, 2560]",
+        "attn_q_proj [4096, 2560]",
         w_shape=(4096, 2560),
+        x_shape=(*batch_shape, 2560),
+    ))
+
+    # 4. Attention O proj: maps n_heads*head_dim→hidden, weight [2560, 4096]
+    results.append(benchmark_matmul(
+        "attn_o_proj [2560, 4096]",
+        w_shape=(2560, 4096),
         x_shape=(*batch_shape, 4096),
     ))
 
