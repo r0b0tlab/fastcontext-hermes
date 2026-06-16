@@ -1,0 +1,244 @@
+{
+  "nvfp4": {
+    "label": "NVFP4",
+    "model": "FastContext-1.0-4B-RL-NVFP4",
+    "timestamp": "2026-06-16T12:47:01",
+    "exploration": {
+      "total_queries": 5,
+      "tool_call_success_rate": 0.0,
+      "citation_success_rate": 0.0,
+      "results": [
+        {
+          "query_id": "q1_find_entry_points",
+          "description": "Basic file discovery",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [],
+          "has_tool_call_tag": false,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "latency_seconds": 0.6903746128082275,
+          "ttft_ms": 0,
+          "decode_tok_s": 0.0,
+          "error": null
+        },
+        {
+          "query_id": "q2_find_configs",
+          "description": "Config file discovery",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [],
+          "has_tool_call_tag": false,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "latency_seconds": 0.8779518604278564,
+          "ttft_ms": 0,
+          "decode_tok_s": 0.0,
+          "error": null
+        },
+        {
+          "query_id": "q3_find_quantization",
+          "description": "Keyword search + file read",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [],
+          "has_tool_call_tag": false,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "latency_seconds": 1.2722032070159912,
+          "ttft_ms": 0,
+          "decode_tok_s": 0.0,
+          "error": null
+        },
+        {
+          "query_id": "q4_find_serving",
+          "description": "Config parameter discovery",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [],
+          "has_tool_call_tag": false,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "latency_seconds": 2.733128070831299,
+          "ttft_ms": 0,
+          "decode_tok_s": 0.0,
+          "error": null
+        },
+        {
+          "query_id": "q5_find_async",
+          "description": "Pattern-specific search",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [],
+          "has_tool_call_tag": false,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 0,
+          "completion_tokens": 0,
+          "latency_seconds": 1.5867230892181396,
+          "ttft_ms": 0,
+          "decode_tok_s": 0.0,
+          "error": null
+        }
+      ]
+    },
+    "throughput": {
+      "avg_tok_s": 66.0,
+      "avg_ttft_ms": 24.0,
+      "results": [
+        {
+          "prompt_id": 0,
+          "prompt": "Write a Python function that implements merge sort with type hints and docstring.",
+          "completion_tokens": 0,
+          "wall_time_s": 5.616331338882446,
+          "tok_s": 66.01775686523416,
+          "ttft_ms": 26.926040649414062,
+          "error": null
+        },
+        {
+          "prompt_id": 1,
+          "prompt": "Explain how transformer attention works, step by step, with a code example.",
+          "completion_tokens": 0,
+          "wall_time_s": 7.78430700302124,
+          "tok_s": 65.99372472494082,
+          "ttft_ms": 25.99358558654785,
+          "error": null
+        },
+        {
+          "prompt_id": 2,
+          "prompt": "Write a FastAPI endpoint that accepts a JSON payload, validates it, and returns a processed response.",
+          "completion_tokens": 0,
+          "wall_time_s": 7.778018951416016,
+          "tok_s": 66.01130029849631,
+          "ttft_ms": 21.77119255065918,
+          "error": null
+        },
+        {
+          "prompt_id": 3,
+          "prompt": "Describe 5 common design patterns in Python with brief code snippets for each.",
+          "completion_tokens": 0,
+          "wall_time_s": 7.785582065582275,
+          "tok_s": 65.9602527708278,
+          "ttft_ms": 23.331642150878906,
+          "error": null
+        },
+        {
+          "prompt_id": 4,
+          "prompt": "Write a CLI tool using argparse that can search files by pattern and display matching lines.",
+          "completion_tokens": 0,
+          "wall_time_s": 7.78850793838501,
+          "tok_s": 65.91625965304547,
+          "ttft_ms": 21.07691764831543,
+          "error": null
+        }
+      ]
+    },
+    "concurrency": [
+      {
+        "concurrency": 1,
+        "total_requests": 1,
+        "successful": 1,
+        "failed": 0,
+        "total_tokens": 0,
+        "wall_time_s": 6.84,
+        "aggregate_tok_s": 0.0,
+        "individual_tok_s": [
+          65.8
+        ],
+        "errors": []
+      },
+      {
+        "concurrency": 2,
+        "total_requests": 2,
+        "successful": 2,
+        "failed": 0,
+        "total_tokens": 0,
+        "wall_time_s": 7.23,
+        "aggregate_tok_s": 0.0,
+        "individual_tok_s": [
+          71.2,
+          71.2
+        ],
+        "errors": []
+      },
+      {
+        "concurrency": 4,
+        "total_requests": 4,
+        "successful": 4,
+        "failed": 0,
+        "total_tokens": 0,
+        "wall_time_s": 7.4,
+        "aggregate_tok_s": 0.0,
+        "individual_tok_s": [
+          69.7,
+          69.5,
+          69.6,
+          69.6
+        ],
+        "errors": []
+      },
+      {
+        "concurrency": 8,
+        "total_requests": 8,
+        "successful": 8,
+        "failed": 0,
+        "total_tokens": 0,
+        "wall_time_s": 7.55,
+        "aggregate_tok_s": 0.0,
+        "individual_tok_s": [
+          68.8,
+          68.6,
+          68.6,
+          68.4,
+          68.4,
+          68.4,
+          68.4,
+          68.4
+        ],
+        "errors": []
+      },
+      {
+        "concurrency": 16,
+        "total_requests": 16,
+        "successful": 16,
+        "failed": 0,
+        "total_tokens": 0,
+        "wall_time_s": 8.12,
+        "aggregate_tok_s": 0.0,
+        "individual_tok_s": [
+          64.2,
+          64.0,
+          63.9,
+          63.8,
+          63.6,
+          63.6,
+          63.6,
+          63.6,
+          63.6,
+          63.6,
+          63.6,
+          63.6,
+          63.6,
+          63.6,
+          63.6,
+          63.6
+        ],
+        "errors": []
+      }
+    ],
+    "gpu": {
+      "utilization_pct": 96,
+      "memory_used_mib": "[N/A]",
+      "power_w": 27.91,
+      "temp_c": 61
+    }
+  }
+}

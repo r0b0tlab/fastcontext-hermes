@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FastContext NVFP4 Benchmark Report</title>
+<style>
+  :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --dim: #8b949e; --green: #3fb950; --red: #f85149; --blue: #58a6ff; --yellow: #d29922; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.8em; margin-bottom: 8px; }
+  h2 { font-size: 1.3em; margin: 30px 0 12px; color: var(--blue); border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  .subtitle { color: var(--dim); font-size: 0.9em; margin-bottom: 30px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .metric { text-align: center; }
+  .metric .value { font-size: 2em; font-weight: 700; }
+  .metric .label { color: var(--dim); font-size: 0.8em; margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .blue { color: var(--blue); }
+  .yellow { color: var(--yellow); }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9em; }
+  th { color: var(--dim); font-weight: 600; text-transform: uppercase; font-size: 0.75em; letter-spacing: 1px; }
+  td.num { font-family: 'SF Mono', 'Fira Code', monospace; text-align: right; }
+  .winner { color: var(--green); font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 600; }
+  .badge-green { background: rgba(63,185,80,0.2); color: var(--green); }
+  .badge-blue { background: rgba(88,166,255,0.2); color: var(--blue); }
+  pre { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 12px; overflow-x: auto; font-size: 0.85em; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; }
+  .footer { margin-top: 40px; color: var(--dim); font-size: 0.8em; border-top: 1px solid var(--border); padding-top: 16px; }
+</style>
+</head>
+<body>
+
+<h1>FastContext-1.0-4B-RL <span class="badge badge-green">NVFP4</span> Benchmark Report</h1>
+<p class="subtitle">NVIDIA GB10 (SM121) · vLLM 0.23.0 · FlashInfer + FP8 KV · Generated 2026-06-16 12:57</p>
+
+<h2>🎯 Headline Results</h2>
+<div class="grid">
+  <div class="card metric">
+    <div class="value green">66<span style="font-size:0.5em"> tok/s</span></div>
+    <div class="label">NVFP4 Decode Throughput</div>
+    <div style="color:var(--dim);font-size:0.8em;margin-top:6px">2.9× faster than BF16</div>
+  </div>
+  <div class="card metric">
+    <div class="value blue">950<span style="font-size:0.5em"> tok/s</span></div>
+    <div class="label">Peak Concurrent (c=16)</div>
+    <div style="color:var(--dim);font-size:0.8em;margin-top:6px">2.3× BF16 aggregate</div>
+  </div>
+  <div class="card metric">
+    <div class="value green">100%</div>
+    <div class="label">Tool-Call Success Rate</div>
+    <div style="color:var(--dim);font-size:0.8em;margin-top:6px">Identical to BF16 (100%)</div>
+  </div>
+  <div class="card metric">
+    <div class="value yellow">2.7<span style="font-size:0.5em"> GB</span></div>
+    <div class="label">Model Size (NVFP4)</div>
+    <div style="color:var(--dim);font-size:0.8em;margin-top:6px">2.8× smaller than BF16 (7.6 GB)</div>
+  </div>
+</div>
+
+<h2>📊 Throughput Comparison</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Concurrency</th>
+      <th class="num">NVFP4 (tok/s)</th>
+      <th class="num">BF16 (tok/s)</th>
+      <th class="num">Speedup</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>c=1</strong> (single request)</td><td class="num winner">65.7</td><td class="num">22.3</td><td class="num">2.9×</td></tr>
+    <tr><td><strong>c=2</strong></td><td class="num winner">140.0</td><td class="num">54.9</td><td class="num">2.6×</td></tr>
+    <tr><td><strong>c=4</strong></td><td class="num winner">252.6</td><td class="num">108.3</td><td class="num">2.3×</td></tr>
+    <tr><td><strong>c=8</strong></td><td class="num winner">498.7</td><td class="num">212.5</td><td class="num">2.3×</td></tr>
+    <tr><td><strong>c=16</strong></td><td class="num winner">949.8</td><td class="num">415.7</td><td class="num">2.3×</td></tr>
+  </tbody>
+</table>
+
+<h2>🔧 Tool-Call Correctness</h2>
+<p style="color:var(--dim);margin-bottom:12px">Each query provides GLOB, READ, GREP tools. The model must generate valid <code>&lt;tool_call&gt;</code> JSON requesting the correct tool.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Query</th>
+      <th>Description</th>
+      <th>NVFP4 Tools Called</th>
+      <th class="num">NVFP4 Tokens</th>
+      <th>BF16 Tools Called</th>
+      <th class="num">BF16 Tokens</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>q1_find_entry_points</code></td>
+      <td>Basic file discovery</td>
+      <td><span class="green">✅ GLOB, READ, READ, READ, READ</span></td>
+      <td class="num">114</td>
+      <td><span class="green">✅ GLOB, GLOB</span></td>
+      <td class="num">60</td>
+    </tr>
+    <tr>
+      <td><code>q2_find_configs</code></td>
+      <td>Config file discovery</td>
+      <td><span class="green">✅ GLOB, GREP, GREP</span></td>
+      <td class="num">93</td>
+      <td><span class="green">✅ GLOB, GLOB, GLOB, GLOB</span></td>
+      <td class="num">87</td>
+    </tr>
+    <tr>
+      <td><code>q3_find_quantization</code></td>
+      <td>Keyword search + file read</td>
+      <td><span class="green">✅ GREP, GREP, GREP</span></td>
+      <td class="num">117</td>
+      <td><span class="green">✅ GREP, GREP</span></td>
+      <td class="num">67</td>
+    </tr>
+    <tr>
+      <td><code>q4_find_serving</code></td>
+      <td>Config parameter discovery</td>
+      <td><span class="green">✅ READ, READ, READ, READ</span></td>
+      <td class="num">99</td>
+      <td><span class="green">✅ GLOB, GLOB</span></td>
+      <td class="num">50</td>
+    </tr>
+    <tr>
+      <td><code>q5_find_async</code></td>
+      <td>Pattern-specific search</td>
+      <td><span class="green">✅ GLOB, GLOB, GREP</span></td>
+      <td class="num">80</td>
+      <td><span class="green">✅ GLOB, GREP</span></td>
+      <td class="num">56</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>⚙️ Configuration</h2>
+<pre><code># vLLM 0.23.0 on NVIDIA GB10 (SM121)
+vllm serve &lt;model&gt; \
+  --quantization modelopt \
+  --tensor-parallel-size 1 \
+  --kv-cache-dtype fp8 \
+  --attention-backend flashinfer \
+  --gpu-memory-utilization 0.40 \
+  --max-model-len 131072 \
+  --max-num-seqs 16 \
+  --enable-chunked-prefill \
+  --enable-auto-tool-choice \
+  --tool-call-parser hermes</code></pre>
+
+<h2>📝 Methodology</h2>
+<div class="card">
+<ul style="padding-left: 20px; line-height: 1.8; color: var(--dim); font-size: 0.9em;">
+  <li><strong>Tool-call test:</strong> 5 exploration queries with READ/GLOB/GREP tools. Each query asks the model to find specific code patterns. Success = model emits valid tool_call JSON.</li>
+  <li><strong>Throughput test:</strong> 5 coding prompts (merge sort, attention explanation, FastAPI, design patterns, CLI tool). Each generates up to 512 tokens. Non-streaming with usage tracking.</li>
+  <li><strong>Concurrency test:</strong> N identical prompts sent simultaneously (N=1,2,4,8,16). Measures aggregate decode throughput via continuous batching.</li>
+  <li><strong>Identical config:</strong> Same vLLM flags for both NVFP4 and BF16 (except --quantization for BF16).</li>
+  <li><strong>Warmup:</strong> One throwaway request before measurement to trigger CUDA graph capture and FP4 GEMM autotuning.</li>
+  <li><strong>Hardware:</strong> Single NVIDIA GB10 (SM121), 128GB unified memory. Python 3.12, torch 2.12+cu130.</li>
+</ul>
+</div>
+
+<h2>🔬 Quantization Details</h2>
+<div class="card" style="line-height: 1.8; font-size: 0.9em;">
+  <p><strong>Source:</strong> microsoft/FastContext-1.0-4B-RL (BF16, 7.6 GB, Qwen3-4B-Instruct base)</p>
+  <p><strong>Config:</strong> NVFP4_DEFAULT_CFG (W4A4, group_size=16) via NVIDIA ModelOpt 0.44.0</p>
+  <p><strong>Calibration:</strong> CNN/DailyMail, 512 samples × 1024 tokens × batch 16</p>
+  <p><strong>Quantized layers:</strong> 903 (all attention QKV/O + MLP linear layers)</p>
+  <p><strong>Output size:</strong> 2.7 GB (2.8× compression)</p>
+  <p><strong>tie_word_embeddings:</strong> True — embed_tokens serves as both input embedding and output projection</p>
+</div>
+
+<div class="footer">
+  <p>Model: <a href="https://huggingface.co/r0b0tlab/FastContext-1.0-4B-RL-NVFP4">r0b0tlab/FastContext-1.0-4B-RL-NVFP4</a></p>
+  <p>Repo: <a href="https://github.com/r0b0tlab/fastcontext-hermes">github.com/r0b0tlab/fastcontext-hermes</a></p>
+  <p>© 2026 r0b0tlab · Base model © Microsoft (MIT) · Quantization via NVIDIA ModelOpt</p>
+</div>
+
+</body>
+</html>

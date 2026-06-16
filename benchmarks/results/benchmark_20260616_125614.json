@@ -1,0 +1,266 @@
+{
+  "bf16": {
+    "label": "BF16",
+    "model": "FastContext-1.0-4B-RL-BF16",
+    "timestamp": "2026-06-16T12:56:14",
+    "exploration": {
+      "total_queries": 5,
+      "tool_call_success_rate": 1.0,
+      "citation_success_rate": 0.0,
+      "results": [
+        {
+          "query_id": "q1_find_entry_points",
+          "description": "Basic file discovery",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [
+            "GLOB",
+            "GLOB"
+          ],
+          "has_tool_call_tag": true,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 399,
+          "completion_tokens": 60,
+          "latency_seconds": 2.73620343208313,
+          "ttft_ms": 2736.20343208313,
+          "decode_tok_s": 24.3646601290577,
+          "finish_reason": "tool_calls",
+          "error": null
+        },
+        {
+          "query_id": "q2_find_configs",
+          "description": "Config file discovery",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [
+            "GLOB",
+            "GLOB",
+            "GLOB",
+            "GLOB"
+          ],
+          "has_tool_call_tag": true,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 392,
+          "completion_tokens": 87,
+          "latency_seconds": 3.9103212356567383,
+          "ttft_ms": 3910.3212356567383,
+          "decode_tok_s": 24.720901644908338,
+          "finish_reason": "tool_calls",
+          "error": null
+        },
+        {
+          "query_id": "q3_find_quantization",
+          "description": "Keyword search + file read",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [
+            "GREP",
+            "GREP"
+          ],
+          "has_tool_call_tag": true,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 410,
+          "completion_tokens": 67,
+          "latency_seconds": 3.031820297241211,
+          "ttft_ms": 3031.820297241211,
+          "decode_tok_s": 24.55437233934504,
+          "finish_reason": "tool_calls",
+          "error": null
+        },
+        {
+          "query_id": "q4_find_serving",
+          "description": "Config parameter discovery",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [
+            "GLOB",
+            "GLOB"
+          ],
+          "has_tool_call_tag": true,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 400,
+          "completion_tokens": 50,
+          "latency_seconds": 2.2665069103240967,
+          "ttft_ms": 2266.5069103240967,
+          "decode_tok_s": 24.511531512432693,
+          "finish_reason": "tool_calls",
+          "error": null
+        },
+        {
+          "query_id": "q5_find_async",
+          "description": "Pattern-specific search",
+          "success": true,
+          "response_content": "",
+          "tool_calls_found": [
+            "GLOB",
+            "GREP"
+          ],
+          "has_tool_call_tag": true,
+          "has_final_answer": false,
+          "citations": [],
+          "prompt_tokens": 399,
+          "completion_tokens": 56,
+          "latency_seconds": 2.5351321697235107,
+          "ttft_ms": 2535.1321697235107,
+          "decode_tok_s": 24.54397564171511,
+          "finish_reason": "tool_calls",
+          "error": null
+        }
+      ]
+    },
+    "throughput": {
+      "avg_tok_s": 22.4,
+      "avg_ttft_ms": 22640.0,
+      "results": [
+        {
+          "prompt_id": 0,
+          "prompt": "Write a Python function that implements merge sort with type hints and docstring.",
+          "completion_tokens": 483,
+          "wall_time_s": 21.54416799545288,
+          "tok_s": 22.419060234859945,
+          "ttft_ms": 21544.16799545288,
+          "error": null
+        },
+        {
+          "prompt_id": 1,
+          "prompt": "Explain how transformer attention works, step by step, with a code example.",
+          "completion_tokens": 512,
+          "wall_time_s": 22.869657516479492,
+          "tok_s": 22.38774234511651,
+          "ttft_ms": 22869.657516479492,
+          "error": null
+        },
+        {
+          "prompt_id": 2,
+          "prompt": "Write a FastAPI endpoint that accepts a JSON payload, validates it, and returns a processed response.",
+          "completion_tokens": 512,
+          "wall_time_s": 22.90533185005188,
+          "tok_s": 22.352874140910572,
+          "ttft_ms": 22905.33185005188,
+          "error": null
+        },
+        {
+          "prompt_id": 3,
+          "prompt": "Describe 5 common design patterns in Python with brief code snippets for each.",
+          "completion_tokens": 512,
+          "wall_time_s": 22.935335636138916,
+          "tok_s": 22.323632325364716,
+          "ttft_ms": 22935.335636138916,
+          "error": null
+        },
+        {
+          "prompt_id": 4,
+          "prompt": "Write a CLI tool using argparse that can search files by pattern and display matching lines.",
+          "completion_tokens": 512,
+          "wall_time_s": 22.947396278381348,
+          "tok_s": 22.31189951961361,
+          "ttft_ms": 22947.396278381348,
+          "error": null
+        }
+      ]
+    },
+    "concurrency": [
+      {
+        "concurrency": 1,
+        "total_requests": 1,
+        "successful": 1,
+        "failed": 0,
+        "total_tokens": 501,
+        "wall_time_s": 22.45,
+        "aggregate_tok_s": 22.3,
+        "individual_tok_s": [
+          22.3
+        ],
+        "errors": []
+      },
+      {
+        "concurrency": 2,
+        "total_requests": 2,
+        "successful": 2,
+        "failed": 0,
+        "total_tokens": 1017,
+        "wall_time_s": 18.53,
+        "aggregate_tok_s": 54.9,
+        "individual_tok_s": [
+          27.7,
+          27.6
+        ],
+        "errors": []
+      },
+      {
+        "concurrency": 4,
+        "total_requests": 4,
+        "successful": 4,
+        "failed": 0,
+        "total_tokens": 2023,
+        "wall_time_s": 18.67,
+        "aggregate_tok_s": 108.3,
+        "individual_tok_s": [
+          27.5,
+          27.5,
+          27.4,
+          27.4
+        ],
+        "errors": []
+      },
+      {
+        "concurrency": 8,
+        "total_requests": 8,
+        "successful": 8,
+        "failed": 0,
+        "total_tokens": 4031,
+        "wall_time_s": 18.97,
+        "aggregate_tok_s": 212.5,
+        "individual_tok_s": [
+          27.1,
+          27.0,
+          27.0,
+          27.0,
+          27.0,
+          27.0,
+          27.0,
+          27.0
+        ],
+        "errors": []
+      },
+      {
+        "concurrency": 16,
+        "total_requests": 16,
+        "successful": 16,
+        "failed": 0,
+        "total_tokens": 8136,
+        "wall_time_s": 19.57,
+        "aggregate_tok_s": 415.7,
+        "individual_tok_s": [
+          26.3,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2,
+          26.2
+        ],
+        "errors": []
+      }
+    ],
+    "gpu": {
+      "utilization_pct": 96,
+      "memory_used_mib": "[N/A]",
+      "power_w": 30.75,
+      "temp_c": 67
+    }
+  }
+}
