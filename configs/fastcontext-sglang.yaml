@@ -1,0 +1,27 @@
+# SGLang serving config for FastContext-1.0-4B-RL on GB10
+# Launch: python3 -m sglang.launch_server $(python configs/expand.py configs/fastcontext-sglang.yaml)
+
+model_path: microsoft/FastContext-1.0-4B-RL
+tool_call_parser: qwen
+context_length: 262144
+dtype: bfloat16
+host: 0.0.0.0
+port: 30000
+tp_size: 1
+mem_fraction_static: 0.80
+trust_remote_code: true
+
+# GB10 optimizations
+# These are passed as SGLang server args; verify compatibility per SGLang version
+sglang_args:
+  # Disable CUDA graphs initially for stability, enable after validation
+  disable_cuda_graph: false
+  # Chunked prefill for long context exploration
+  chunked_prefill_size: 8192
+  # Max concurrent exploration requests (continuous batching)
+  max_running_requests: 16
+
+# Environment
+env:
+  HF_HOME: /home/r0b0tdgx/models/hf-cache
+  SGLANG_USE_TRTLLM_ATTENTION: "1"  # Use TRT-LLM attention backend on SM121
