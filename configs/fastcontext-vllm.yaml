@@ -1,27 +1,51 @@
-# vLLM alternative serving config for FastContext-1.0-4B-RL on GB10
-# Launch: vllm serve microsoft/FastContext-1.0-4B-RL $(python configs/expand.py configs/fastcontext-vllm.yaml)
+# vLLM NVFP4 serving config for FastContext-1.0-4B-RL-NVFP4 on GB10 SM121
+# After quantization: vllm serve <model_path> with these flags
+#
+# Launch:
+#   vllm serve /home/r0b0tdgx/models/llm/nvfp4/r0b0tlab/FastContext-1.0-4B-RL-NVFP4 \
+#     --quantization modelopt \
+#     --tensor-parallel-size 1 \
+#     --trust-remote-code \
+#     --dtype auto \
+#     --kv-cache-dtype fp8 \
+#     --attention-backend flashinfer \
+#     --gpu-memory-utilization 0.40 \
+#     --max-model-len 131072 \
+#     --max-num-seqs 16 \
+#     --max-num-batched-tokens 8192 \
+#     --enable-chunked-prefill \
+#     --enable-auto-tool-choice \
+#     --tool-call-parser hermes \
+#     --port 30000
 
-model: microsoft/FastContext-1.0-4B-RL
-dtype: bfloat16
-max_model_len: 262144
-gpu_memory_utilization: 0.85
+model: FastContext-1.0-4B-RL-NVFP4
+quantization: modelopt
+dtype: auto
 tensor_parallel_size: 1
 trust_remote_code: true
+
+# SM121 native kernels
+attention_backend: flashinfer
+kv_cache_dtype: fp8  # NVFP4 KV not in public PyTorch; FP8 is the proven path
+
+# Sizing — 4B NVFP4 is tiny (~2.4 GB), leave massive room for context + batching
+gpu_memory_utilization: 0.40
+max_model_len: 131072  # Reduced from 262K for practical exploration use
+max_num_seqs: 16
+max_num_batched_tokens: 8192
+enable_chunked_prefill: true
+
+# Tool calling — FastContext uses Qwen3 chat template with function calling
 enable_auto_tool_choice: true
-tool_call_parser: qwen
+tool_call_parser: hermes  # Test 'hermes' first; fallback to 'qwen'
 
 # Serving
 host: 0.0.0.0
 port: 30000
-served_model_name: FastContext-1.0-4B-RL
-
-# GB10 optimizations
-swap_space: 4
-max_num_seqs: 16
-max_num_batched_tokens: 8192
-enforce_eager: false
+served_model_name: FastContext-1.0-4B-RL-NVFP4
 
 # Environment
 env:
   HF_HOME: /home/r0b0tdgx/models/hf-cache
   VLLM_USE_V1: "1"
+  PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
