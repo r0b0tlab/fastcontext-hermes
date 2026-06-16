@@ -114,11 +114,23 @@ async def run_fastcontext(
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             cwd=work_dir,
+            # FastContext CLI reads BASE_URL, MODEL, API_KEY directly.
+            # The benchmark configs use FASTCONTEXT_* as separate credentials,
+            # but the CLI itself uses the bare names.
             env={
                 **os.environ,
-                "BASE_URL": os.environ.get("FASTCONTEXT_BASE_URL", "http://127.0.0.1:30000/v1"),
-                "MODEL": os.environ.get("FASTCONTEXT_MODEL", "FastContext-1.0-4B-RL"),
-                "API_KEY": os.environ.get("FASTCONTEXT_API_KEY", "local"),
+                "BASE_URL": os.environ.get(
+                    "FASTCONTEXT_BASE_URL",
+                    os.environ.get("BASE_URL", "http://127.0.0.1:30000/v1"),
+                ),
+                "MODEL": os.environ.get(
+                    "FASTCONTEXT_MODEL",
+                    os.environ.get("MODEL", "FastContext-1.0-4B-RL-NVFP4"),
+                ),
+                "API_KEY": os.environ.get(
+                    "FASTCONTEXT_API_KEY",
+                    os.environ.get("API_KEY", "local"),
+                ),
             },
         )
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)

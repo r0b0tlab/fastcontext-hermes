@@ -3,11 +3,19 @@
 NVFP4 Quantization Script for FastContext-1.0-4B-RL
 
 Model: microsoft/FastContext-1.0-4B-RL (Qwen3-4B-Instruct base, dense, BF16)
+Config: Qwen3ForCausalLM, tie_word_embeddings=True, hidden_size=2560
 Tool:  NVIDIA Model Optimizer (nvidia-modelopt >= 0.44.0)
-Config: NVFP4_DEFAULT_CFG (W4A4, group_size=16)
+Recipe: NVFP4_DEFAULT_CFG (W4A4, group_size=16)
 
-This is a standard dense Qwen3 transformer — no MoE, no multimodal.
-Simplest NVFP4 quantization case in our pipeline.
+Architecture notes:
+- Dense transformer, no MoE, no multimodal → no unfuse, no vision exclusions
+- tie_word_embeddings=True → NO separate lm_head.weight (embed_tokens IS lm_head)
+  The ModelOpt lm_head-drop pitfall does NOT apply to this model.
+- vocab_size=151936, divisible by 16 → embed_tokens can be quantized
+- hidden_size=2560, intermediate_size=9728, both divisible by 16
+
+⚠️  Run matmul_early_rejection.py FIRST to verify NVFP4 benefit on SM121.
+    For small dimensions (2560×9728), BF16 tensor cores may outperform NVFP4.
 
 Usage:
     # In a ModelOpt venv (nvidia-modelopt[hf]>=0.44.0, torch+cu130)
@@ -17,8 +25,6 @@ Usage:
         --calib-samples 512 \
         --batch-size 16 \
         --seq-len 1024
-
-Expected output: ~2.4 GB NVFP4 checkpoint (3.3× compression from ~8 GB BF16)
 """
 
 import argparse
@@ -33,7 +39,7 @@ from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(
         description="NVFP4 quantize FastContext-1.0-4B-RL for SM121"
     )
@@ -50,11 +56,20 @@ def main():
     parser.add_argument("--calib-samples", type=int, default=512)
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--seq-len", type=int, default=1024)
-    args = parser.parse_args()
+    parser.add_argument(
+        "--exclude-embed-tokens",
+        action="store_true",
+        help="Exclude embed_tokens from quantization (use if quality regresses)",
+    )
+    return parser.parse_args()
 
-    print(f"╔══════════════════════════════════════════════════════════╗")
-    print(f"║  FastContext-1.0-4B-RL → NVFP4 Quantization             ║")
-    print(f"╚══════════════════════════════════════════════════════════╝")
+
+def main():
+    args = parse_args()
+
+    print("╔══════════════════════════════════════════════════════════╗")
+    print("║  FastContext-1.0-4B-RL → NVFP4 Quantization             ║")
+    print("╚══════════════════════════════════════════════════════════╝")
     print(f"\nSource:  {args.model_path}")
     print(f"Output:  {args.output_dir}")
     print(f"Config:  NVFP4_DEFAULT_CFG (W4A4, group_size=16)")
@@ -62,7 +77,7 @@ def main():
     print()
 
     # ─── Load model on CPU first (GB10 unified memory safe) ───────────
-    print("[1/5] Loading BF16 model (CPU-first for unified memory)...")
+    print("[1/6] Loading BF16 model (CPU-first for unified memory)...")
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
         torch_dtype=torch.bfloat16,
@@ -79,8 +94,16 @@ def main():
         model.config.architectures = ["Qwen3ForCausalLM"]
         print(f"  → Set architectures to {model.config.architectures}")
 
+    # Verify tie_word_embeddings (affects lm_head handling)
+    tied = getattr(model.config, "tie_word_embeddings", False)
+    if tied:
+        print("  → tie_word_embeddings=True → lm_head is tied to embed_tokens (no separate lm_head.weight)")
+    else:
+        print("  → tie_word_embeddings=False → separate lm_head.weight (will verify in export)")
+
     # Move to CUDA (on GB10 unified memory this is near-instant)
-    print("[2/5] Moving model to CUDA...")
+    print("[2/6] Moving model to CUDA...")
+    os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
     for name, param in model.named_parameters():
         param.data = param.data.to("cuda")
     for name, buf in model.named_buffers():
@@ -88,16 +111,18 @@ def main():
     model.eval()
 
     # ─── Configure NVFP4 quantization ────────────────────────────────
-    print("[3/5] Configuring NVFP4 quantization...")
+    print("[3/6] Configuring NVFP4 quantization...")
     import modelopt.torch.quantization as mtq
 
     quant_cfg = mtq.NVFP4_DEFAULT_CFG
 
     # Qwen3-4B is dense, text-only, standard transformer.
     # NVFP4_DEFAULT_CFG quantizes all linear layers (attention QKV/O + MLP).
-    # ModelOpt defaults already exclude: norms, biases, lm_head.
+    # ModelOpt defaults already exclude: norms, biases.
     #
-    # embed_tokens: 152064 × 2560 = divisible by 16, CAN be quantized.
+    # embed_tokens: 151936 × 2560 = divisible by 16, CAN be quantized.
+    # With tie_word_embeddings=True, embed_tokens IS lm_head, so quantizing
+    # it affects both input embedding and output projection.
     # Keep it quantized for max compression. If quality regresses,
     # re-run with --exclude-embed-tokens.
     if args.exclude_embed_tokens:
@@ -106,10 +131,10 @@ def main():
             {"quantizer_name": "*embed_tokens*", "enable": False}
         )
 
-    print(f"  → Quantization config: NVFP4_DEFAULT_CFG (W4A4, group16)")
+    print("  → Quantization config: NVFP4_DEFAULT_CFG (W4A4, group16)")
 
     # ─── Calibration ─────────────────────────────────────────────────
-    print(f"[4/5] Calibrating with cnn_dailymail ({args.calib_samples} samples)...")
+    print(f"[4/6] Calibrating with cnn_dailymail ({args.calib_samples} samples)...")
     calib_data = load_dataset(
         "cnn_dailymail", "3.0.0", split=f"train[:{args.calib_samples}]"
     )
@@ -127,15 +152,15 @@ def main():
             with torch.no_grad():
                 model(**inputs)
             if (i // args.batch_size) % 5 == 0:
-                print(
-                    f"  → Calibrated {(i + args.batch_size) // args.batch_size}/{len(calib_data) // args.batch_size} batches"
-                )
+                done = (i + args.batch_size) // args.batch_size
+                total_batches = len(calib_data) // args.batch_size
+                print(f"  → Calibrated {done}/{total_batches} batches")
 
     mtq.quantize(model, quant_cfg, forward_loop)
     print("  → Quantization complete")
 
     # ─── Export ──────────────────────────────────────────────────────
-    print(f"[5/5] Exporting NVFP4 checkpoint to {args.output_dir}...")
+    print(f"[5/6] Exporting NVFP4 checkpoint to {args.output_dir}...")
     os.makedirs(args.output_dir, exist_ok=True)
 
     from modelopt.torch.export import export_hf_checkpoint
@@ -144,7 +169,7 @@ def main():
         export_hf_checkpoint(model, export_dir=args.output_dir)
     print("  → Export complete")
 
-    # ─── Post-export fixes (known ModelOpt pitfalls) ─────────────────
+    # ─── Post-export fixes ───────────────────────────────────────────
 
     # Fix 1: Ensure quant_method is in hf_quant_config.json
     quant_config_path = Path(args.output_dir) / "hf_quant_config.json"
@@ -157,18 +182,29 @@ def main():
                 json.dump(qc, f, indent=2)
             print("  → Added quant_method: modelopt_fp4 to hf_quant_config.json")
 
-    # Fix 2: Verify lm_head.weight is present
+    # Fix 2: Verify weights present
+    # For tie_word_embeddings=True, there is no separate lm_head.weight.
+    # embed_tokens.weight serves as both input embedding and output projection.
     index_path = Path(args.output_dir) / "model.safetensors.index.json"
     if index_path.exists():
         with open(index_path) as f:
             idx = json.load(f)
-        if "lm_head.weight" not in idx.get("weight_map", {}):
-            print("  ⚠️  lm_head.weight MISSING from export — copying from source...")
-            _copy_lm_head(args.model_path, args.output_dir)
+        weight_map = idx.get("weight_map", {})
+        has_embed = "model.embed_tokens.weight" in weight_map
+        has_lm_head = "lm_head.weight" in weight_map
+        if has_embed:
+            if tied and not has_lm_head:
+                print("  ✓ embed_tokens.weight present (tied with lm_head — expected)")
+            elif has_lm_head:
+                print("  ✓ both embed_tokens.weight and lm_head.weight present")
         else:
-            print("  ✓ lm_head.weight present in checkpoint")
+            print("  ⚠️  embed_tokens.weight MISSING — check export!")
+        if not tied and not has_lm_head:
+            print("  ⚠️  lm_head.weight MISSING (untied model) — copying from source...")
+            _copy_lm_head(args.model_path, args.output_dir)
 
     # Fix 3: Copy essential tokenizer/chat files from source
+    # export_hf_checkpoint does NOT copy these
     essential_files = [
         "tokenizer_config.json",
         "tokenizer.json",
@@ -176,8 +212,18 @@ def main():
         "generation_config.json",
         "chat_template.jinja",
     ]
-    from huggingface_hub import snapshot_download
+    # config.json is written by export, but verify architectures is set
+    config_path = Path(args.output_dir) / "config.json"
+    if config_path.exists():
+        with open(config_path) as f:
+            cfg = json.load(f)
+        if not cfg.get("architectures"):
+            cfg["architectures"] = ["Qwen3ForCausalLM"]
+            with open(config_path, "w") as f:
+                json.dump(cfg, f, indent=2)
+            print("  → Fixed missing architectures in config.json")
 
+    from huggingface_hub import snapshot_download
     source_snapshot = snapshot_download(
         repo_id=args.model_path,
         allow_patterns=essential_files,
@@ -185,7 +231,7 @@ def main():
     for fname in essential_files:
         src = Path(source_snapshot) / fname
         dst = Path(args.output_dir) / fname
-        if src.exists() and not dst.exists():
+        if src.exists():
             shutil.copy2(src, dst)
             print(f"  → Copied {fname}")
 
@@ -210,8 +256,6 @@ def _copy_lm_head(source_path: str, output_dir: str):
     """Copy lm_head.weight from BF16 source if ModelOpt dropped it."""
     from safetensors import safe_open
     from safetensors.torch import save_file
-
-    # Find the shard containing lm_head.weight in source
     from huggingface_hub import snapshot_download
 
     source = snapshot_download(
@@ -222,12 +266,10 @@ def _copy_lm_head(source_path: str, output_dir: str):
         with safe_open(sf, framework="pt") as f:
             if "lm_head.weight" in f.keys():
                 lm_head = f.get_tensor("lm_head.weight")
-                # Append to last shard or create new shard
                 save_file(
                     {"lm_head.weight": lm_head},
                     str(Path(output_dir) / "lm_head.safetensors"),
                 )
-                # Update index
                 idx_path = Path(output_dir) / "model.safetensors.index.json"
                 if idx_path.exists():
                     with open(idx_path) as f:
@@ -244,8 +286,4 @@ def _copy_lm_head(source_path: str, output_dir: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--exclude-embed-tokens", action="store_true")
-    args_extra, _ = parser.parse_known_args()
-    main.__wrapped__ = None  # type: ignore
-    sys.exit()
+    main()

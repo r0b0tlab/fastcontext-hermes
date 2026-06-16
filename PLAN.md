@@ -1,6 +1,6 @@
 # FastContext-Hermes: Optimized Repo Exploration via Async Subagent Integration
 
-> **Status:** Planning — Phase 0
+> **Status:** Phase 0 complete — Phase 1 (NVFP4) planned, gaps closed
 > **Created:** 2026-06-16
 > **Repo target:** github.com/r0b0tlab/fastcontext-hermes
 > **Model:** microsoft/FastContext-1.0-4B-RL (Qwen3-4B-Instruct base, MIT)
@@ -38,12 +38,18 @@ Main Agent ──query──▶  FastContext (4B)  ──read/search──▶  R
 | Property | Value |
 |----------|-------|
 | Base | Qwen/Qwen3-4B-Instruct-2507 |
-| Params | 4B, BF16 |
-| Context | 262K tokens |
+| Architecture | `Qwen3ForCausalLM` |
+| Params | ~4.03B (36 layers, 32 attn heads, 8 KV heads, head_dim=128) |
+| Hidden/Intermediate | 2560 / 9728 |
+| Precision | BF16 |
+| Context | 262K tokens (max_position_embeddings) |
+| Vocab | 151936 |
+| `tie_word_embeddings` | **True** — no separate lm_head.weight |
 | Tools | READ, GLOB, GREP (read-only) |
 | Training | SFT (exploration traces) → GRPO (file/line F1 reward) |
 | Output format | `<final_answer>` block with `path/to/file.py:42-58` citations |
-| Serving | SGLang or any OpenAI-compatible endpoint |
+| Chat template | Qwen `<tool_call>` XML format, `Qwen2Tokenizer` |
+| Serving | Any OpenAI-compatible endpoint (vLLM, SGLang) |
 | License | MIT |
 
 ### Strengths
@@ -64,11 +70,20 @@ Main Agent ──query──▶  FastContext (4B)  ──read/search──▶  R
 
 ---
 
-## 2. Architecture: Hybrid API + Local via Async Subagents
+## 2. Architecture: Two Components, Not One
 
-### Core Insight
+### Critical Distinction
 
-FastContext's paper architecture maps **exactly** to Hermes's `delegate_task(background=true)` pattern. The main agent (expensive API model) stays focused on reasoning and solving; FastContext (cheap local model on GB10) handles exploration in the background.
+FastContext is **two components** that must be deployed separately:
+
+1. **Model server (vLLM/SGLang)** — serves the 4B model as an OpenAI-compatible chat completions endpoint with tool-call support. The model generates `<tool_call>` JSON.
+2. **FastContext CLI (agent loop)** — Python CLI that calls the model server, parses tool-call responses, executes READ/GLOB/GREP on the filesystem, feeds results back to the model, and returns the final `<final_answer>` citations.
+
+The CLI is the agent orchestrator; the model server is the brain. Both are required.
+
+### Hybrid API + Local via Async Subagents
+
+FastContext's paper architecture maps to Hermes's `delegate_task(background=true)` pattern. The main agent (expensive API model) stays focused on reasoning and solving; FastContext (cheap local model on GB10) handles exploration in the background.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -175,33 +190,62 @@ tasks = [
 
 ### Phase 1: NVFP4 Quantization + SM121 Optimization `[NEXT — PRIORITY]`
 
-The model is a standard Qwen3-4B dense transformer — no MoE, no multimodal. This is the simplest NVFP4 quantization target we've worked with. Goal: produce a publishable `r0b0tlab/FastContext-1.0-4B-RL-NVFP4` checkpoint optimized for SM121.
+The model is a standard Qwen3-4B dense transformer (`Qwen3ForCausalLM`) — no MoE, no multimodal, `tie_word_embeddings=True`. This is the simplest NVFP4 quantization target we've worked with. Goal: produce a publishable `r0b0tlab/FastContext-1.0-4B-RL-NVFP4` checkpoint.
 
-#### 1a: Download + Inspect Source Model
-- [ ] Download `microsoft/FastContext-1.0-4B-RL` BF16 weights (~8 GB)
-- [ ] Inspect safetensors header: confirm all-BF16, standard Qwen3 key structure
-- [ ] Verify `config.json`: `architectures: ["Qwen3ForCausalLM"]`, `hidden_size`, `num_hidden_layers`
-- [ ] Confirm tool-calling chat template exists in `tokenizer_config.json`
+**Key config.json findings (verified from HF):**
+- `tie_word_embeddings: true` → **NO separate lm_head.weight**. The ModelOpt lm_head-drop pitfall does NOT apply. embed_tokens.weight IS lm_head.
+- `vocab_size: 151936` (divisible by 16 ✓) → embed_tokens can be quantized
+- `hidden_size: 2560`, `intermediate_size: 9728` (both divisible by 16 ✓)
+- `architectures: ["Qwen3ForCausalLM"]` → standard vLLM registry, no custom loader
+- Chat template uses `<tool_call>` XML format → vLLM `--tool-call-parser hermes`
+
+**⚠️ Throughput caveat:** For small dimensions (2560×9728), BF16 tensor cores may outperform NVFP4 (HiDream-O1 precedent: 0.87× at 4096×12288). NVFP4 value here is primarily **memory compression (3×) and power savings**, not necessarily throughput. Matmul test (step 0) will determine the honest framing.
+
+#### 1.0: Matmul Early Rejection Test `[BEFORE ANY QUANTIZATION]`
+- [ ] Run `scripts/matmul_early_rejection.py` inside ComfyUI Docker container
+  - Tests largest representative matmuls: mlp_down_proj [9728,2560], mlp_gate_proj [2560,9728], attn_q_proj [2560,4096], attn_o_proj [4096,2560]
+  - Decision rule: if ALL layers < 1.0×, NVFP4 won't improve throughput → document as memory-only benefit
+  - This prevents committing to a multi-hour quantization that produces a slower model
+- [ ] If NVFP4 slower at matmul level: reassess plan — still proceed for memory savings (3× smaller, 2.4 GB vs 8 GB) but reframe success criteria honestly
+
+#### 1a: Prior-Art Check + Download + Inspect Source Model
+- [ ] Check HF for existing NVFP4 quantizations: `hf search models "FastContext NVFP4"`
+- [ ] Check vLLM recipes: `curl recipes.vllm.ai/microsoft/FastContext-1.0-4B-RL`
+- [ ] Download `microsoft/FastContext-1.0-4B-RL` BF16 weights (~8 GB) to `/home/r0b0tdgx/models/llm/bf16/microsoft/FastContext-1.0-4B-RL/`
+- [ ] Inspect safetensors header: confirm all-BF16, verify key structure matches Qwen3
+- [ ] Verify `config.json` properties against plan: `tie_word_embeddings=true`, `architectures`, dimensions
 
 #### 1b: NVFP4 Quantization via ModelOpt
-- [ ] Set up ModelOpt venv: `nvidia-modelopt[hf]>=0.44.0`, `torch+cu130`, `transformers>=5.4`
-- [ ] Use `NVFP4_DEFAULT_CFG` (W4A4, group_size=16) — full quantization
+- [ ] Set up ModelOpt venv:
+  ```bash
+  uv venv ~/.venvs/modelopt --python 3.12
+  source ~/.venvs/modelopt/bin/activate
+  uv pip install "nvidia-modelopt[hf]>=0.44.0"
+  uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+  uv pip install "transformers>=5.4" safetensors accelerate datasets
+  ```
+- [ ] Run `scripts/quantize_fastcontext_nvfp4.py`:
+  ```bash
+  python scripts/quantize_fastcontext_nvfp4.py \
+      --model-path microsoft/FastContext-1.0-4B-RL \
+      --output-dir /home/r0b0tdgx/models/llm/nvfp4/r0b0tlab/FastContext-1.0-4B-RL-NVFP4
+  ```
+- [ ] Config: `NVFP4_DEFAULT_CFG` (W4A4, group_size=16)
   - Dense model, no MoE → no unfuse needed
   - Text-only → no multimodal exclusions needed
-  - Standard exclusions (ModelOpt defaults): `*norm*`, `*lm_head*`, biases
-  - Qwen3 `embed_tokens` is 152064 × 2560 = divisible by 16 → can quantize (unlike Gemma 4's 262144)
-  - If embed_tokens causes issues: add `"*embed_tokens*": False` to exclusion list
+  - `tie_word_embeddings=true` → no lm_head fix needed
+  - Standard exclusions (ModelOpt defaults): `*norm*`, biases
+  - If embed_tokens quality regression: re-run with `--exclude-embed-tokens`
 - [ ] Calibration: `cnn_dailymail` 512 samples × 1024 tokens × batch 16
-- [ ] **Critical**: Add `quant_method: "modelopt_fp4"` to `hf_quant_config.json`
-- [ ] Export via `export_hf_checkpoint`, verify `hf_quant_config.json` present
-- [ ] Copy from source: `tokenizer_config.json`, `chat_template.jinja`, `special_tokens_map.json`, `generation_config.json`
-- [ ] **Verify `lm_head.weight` in output** — if `tie_word_embeddings=false`, ModelOpt drops it; manually copy from BF16 source
-- [ ] Expected output: ~2.4 GB NVFP4 checkpoint (3.3× compression from 8 GB BF16)
+- [ ] **Critical**: Verify `quant_method: "modelopt_fp4"` in `hf_quant_config.json` (script auto-adds)
+- [ ] Copy from source: `tokenizer_config.json`, `chat_template.jinja`, `special_tokens_map.json`, `generation_config.json` (script auto-copies)
+- [ ] Expected output: ~2.4 GB NVFP4 checkpoint
 
 #### 1c: SM121 Serving Validation
-- [ ] Serve NVFP4 model on GB10 via vLLM 0.23.0:
+- [ ] Serve NVFP4 model on GB10 via vLLM 0.23.0 (bare metal or Docker):
   ```bash
-  vllm serve r0b0tlab/FastContext-1.0-4B-RL-NVFP4 \
+  # Bare metal (pip wheel)
+  vllm serve /path/to/FastContext-1.0-4B-RL-NVFP4 \
       --quantization modelopt \
       --tensor-parallel-size 1 \
       --trust-remote-code \
@@ -216,28 +260,41 @@ The model is a standard Qwen3-4B dense transformer — no MoE, no multimodal. Th
       --enable-auto-tool-choice \
       --tool-call-parser hermes \
       --port 30000
+
+  # Docker alternative (our standard path):
+  # docker run --gpus all --ipc=host -p 30000:30000 \
+  #   -v /path/to/model:/mnt/model \
+  #   --entrypoint python3 \
+  #   vllm/vllm-openai:v0.23.0-aarch64-ubuntu2404 \
+  #   -m vllm.entrypoints.openai.api_server \
+  #   --model /mnt/model --quantization modelopt \
+  #   --kv-cache-dtype fp8 --attention-backend flashinfer \
+  #   --tool-call-parser hermes --enable-auto-tool-choice [...]
   ```
-  **SM121-specific flags:**
-  - `--attention-backend flashinfer` — native SM121 attention
-  - `--kv-cache-dtype fp8` — FP8 KV cache (NVFP4 KV not available in public PyTorch)
-  - `gpu_memory_utilization 0.40` — 4B NVFP4 is tiny (~2.4 GB), leave room for 131K context + batching
-  - `--tool-call-parser hermes` — Qwen3 tool calls; verify parser compatibility
-- [ ] Smoke test: send a test query with tool-call format
-- [ ] Verify tool-calling works: READ/GLOB/GREP execute and return results
-- [ ] Validate `<final_answer>` citation output format preserved
+  **SM121-specific notes:**
+  - `--tool-call-parser hermes` — handles `<tool_call>` XML format (verified from chat template)
+  - `--kv-cache-dtype fp8` — NVFP4 KV not available in public PyTorch
+  - `gpu_memory_utilization 0.40` — 4B NVFP4 is tiny (~2.4 GB), massive headroom
+  - **Note:** `--entrypoint python3` is required for official vLLM Docker image (it has `vllm` as ENTRYPOINT)
+- [ ] Verify `Qwen3ForCausalLM` is in vLLM model registry (startup log)
+- [ ] Smoke test: send a tool-call chat request, verify model generates `<tool_call>` JSON
+- [ ] Validate tool-calling works end-to-end via FastContext CLI (Phase 2 dependency, but verify model output format now)
 - [ ] Measure: VRAM usage, throughput (tok/s), power (W), latency (ms to first token)
 
 #### 1d: BF16 Baseline Comparison
 - [ ] Serve BF16 model on GB10 with identical config (minus `--quantization`)
-- [ ] Run identical exploration queries on both
-- [ ] Compare citation accuracy (file/line F1) — target: ≥95% of BF16
-- [ ] Compare throughput — NVFP4 should be faster on SM121 FP4 tensor cores
-- [ ] Compare VRAM/power — NVFP4 should use ~3× less VRAM, lower power
+- [ ] Run identical queries on both
+- [ ] Compare output quality — target: ≥95% citation match
+- [ ] Compare throughput — NVFP4 may be equal or slower (small dimensions); document honestly
+- [ ] Compare VRAM/power — NVFP4 should use ~3× less VRAM
+- [ ] **Gate:** If NVFP4 quality < 90% of BF16, exclude embed_tokens and re-quantize
 
 #### 1e: Publish NVFP4 Checkpoint
 - [ ] Upload to `huggingface.co/r0b0tlab/FastContext-1.0-4B-RL-NVFP4`
-- [ ] Professional model card: credits (Microsoft, NVIDIA ModelOpt), quantization recipe, `base_model: microsoft/FastContext-1.0-4B-RL`, before/after benchmark table
+- [ ] `base_model: microsoft/FastContext-1.0-4B-RL` in model card YAML
+- [ ] Professional model card with honest throughput characterization (based on matmul test)
 - [ ] No hardware lock-in language — generic "NVFP4-capable NVIDIA GPU"
+- [ ] Credits: Microsoft (FastContext), Qwen (base model), NVIDIA (ModelOpt), CNN/DailyMail (calibration)
 
 ### Phase 2: Hermes Async Subagent Integration `[AFTER NVFP4 VALIDATED]`
 - [ ] Install FastContext CLI (`uv tool install git+https://github.com/microsoft/fastcontext.git`)
@@ -304,35 +361,49 @@ Solves the task                    Feeds focused context
 
 ## 5. Technical Details
 
-### Serving Config
+### Serving Config (NVFP4 — see configs/fastcontext-vllm.yaml)
 
 ```yaml
-# configs/fastcontext-sglang.yaml
-model: microsoft/FastContext-1.0-4B-RL
-backend: sglang
-context_length: 262144
-dtype: bfloat16
-tp_size: 1
-mem_fraction: 0.8
-tool_call_parser: qwen
-port: 30000
-# GB10 specifics
-gpu_memory_utilization: 0.85
-enforce_eager: false  # Enable CUDA graphs for throughput
+model: FastContext-1.0-4B-RL-NVFP4
+quantization: modelopt
+dtype: auto
+attention_backend: flashinfer
+kv_cache_dtype: fp8
+gpu_memory_utilization: 0.40
+max_model_len: 131072
+tool_call_parser: hermes  # handles <tool_call> XML format
 ```
+
+### BF16 Baseline Config (see configs/fastcontext-sglang.yaml)
+
+Used for quality/throughput comparison. SGLang with Qwen3 tool-call parser, BF16 dtype.
 
 ### Environment Variables
 
 ```bash
-# FastContext endpoint (local GB10)
-export FASTCONTEXT_BASE_URL="http://127.0.0.1:30000/v1"
-export FASTCONTEXT_MODEL="FastContext-1.0-4B-RL"
-export FASTCONTEXT_API_KEY="local"
+# vLLM model server (component 1)
+# No special env needed — vLLM reads from CLI args
+
+# FastContext CLI (component 2)
+# The CLI reads these bare names directly:
+export BASE_URL="http://127.0.0.1:30000/v1"
+export MODEL="FastContext-1.0-4B-RL-NVFP4"
+export API_KEY="local"
+
+# For benchmark configs, FastContext uses separate FASTCONTEXT_* vars
+# (see benchmark/evaluation/configs/example.env in the repo)
 
 # Main agent (API provider)
 export MAIN_AGENT_PROVIDER="anthropic"  # or openrouter, etc.
 export MAIN_AGENT_MODEL="claude-sonnet-4"
 ```
+
+### FastContext CLI Requirements
+
+- Python 3.12+ (system has 3.11.15 — need uv venv with 3.12)
+- `uv` package manager
+- OpenAI-compatible endpoint (our GB10 vLLM server)
+- Installed via: `uv tool install git+https://github.com/microsoft/fastcontext.git`
 
 ### Async Subagent Integration
 
@@ -353,26 +424,37 @@ This is the optimal pattern because:
 
 ## 6. Risk Assessment
 
-| Risk | Probability | Impact | Mitigation |
-|------|------------|--------|------------|
-| NVFP4 quantization degrades tool-call quality | Low | High | Benchmark F1 before/after; keep BF16 as fallback; 4B dense is quantization-friendly |
-| Qwen3 tool-call parser incompatible with vLLM on SM121 | Medium | High | Test `hermes` and `qwen` parsers; SGLang fallback |
-| ModelOpt export drops `lm_head.weight` (known pitfall) | Medium | Critical | Manually copy from BF16 source post-export; verify in index.json |
-| FastContext trained on SWE-bench only, misses ML/infra patterns | Medium | Medium | Validate on our repos before relying on it |
-| Background subagent latency > blocking call | Low | Low | GB10 NVFP4 4B is very fast; measure P50/P95 |
-| FastContext returns too many/irrelevant citations | Medium | Medium | Tune `--max-turns` and use `--citation` mode |
-| `embed_tokens` quantization causes quality regression | Low | Medium | NVFP4_DEFAULT_CFG quantizes it; if F1 drops, exclude `*embed_tokens*` |
+| # | Risk | Probability | Impact | Mitigation |
+|---|------|------------|--------|------------|
+| R1 | **NVFP4 slower than BF16 for small dims** (2560×9728) | **High** | Medium | Matmul early rejection test (step 1.0) before quantizing. If slower, reframe as memory-only benefit (3× smaller). HiDream-O1 precedent: 0.87× at similar dims. |
+| R2 | NVFP4 quantization degrades tool-call quality | Low | High | BF16 baseline comparison (step 1d). If <90%, exclude embed_tokens and re-quantize. 4B dense is quantization-friendly. |
+| R3 | Qwen3 tool-call parser incompatible with vLLM SM121 | Medium | High | Verified: chat template uses `<tool_call>` XML → `--tool-call-parser hermes` is correct. Test early. Fallback: SGLang with `--tool-call-parser qwen`. |
+| R4 | ModelOpt export drops weights | Low | Medium | `tie_word_embeddings=true` → NO separate lm_head.weight to drop. embed_tokens IS lm_head. Script verifies post-export. |
+| R5 | FastContext CLI Python 3.12+ requirement blocks integration | Low | Medium | Use `uv tool install` with Python 3.12 venv. System has 3.11.15; uv can install 3.12 alongside. |
+| R6 | FastContext trained on SWE-bench only, misses ML/infra patterns | Medium | Medium | Validate on our actual repos (vllm-gb10, DSV4, diffusiongemma) in Phase 3. |
+| R7 | Background subagent latency > blocking call | Low | Low | GB10 NVFP4 4B is very fast (~2.4 GB); measure P50/P95. |
+| R8 | FastContext returns too many/irrelevant citations | Medium | Medium | Tune `--max-turns` and use `--citation` mode. |
+| R9 | `transformers_version` mismatch (4.51 vs >=5.4) | Low | Low | `Qwen3ForCausalLM` is stable across versions. ModelOpt uses its own model loading. |
+| R10 | embed_tokens quantization causes quality regression | Medium | Medium | NVFP4_DEFAULT_CFG quantizes it (vocab 151936 div by 16). If F1 drops, `--exclude-embed-tokens`. With tied weights this is the only output projection. |
 
 ---
 
 ## 7. Success Criteria
 
+### Phase 1 (NVFP4)
+- [ ] Matmul early rejection test completed — honest throughput characterization documented
 - [ ] NVFP4 checkpoint produced: `r0b0tlab/FastContext-1.0-4B-RL-NVFP4` (~2.4 GB)
-- [ ] NVFP4 serves correctly on GB10 SM121 with working tool calls (READ/GLOB/GREP)
-- [ ] NVFP4 citation accuracy ≥95% of BF16 baseline
-- [ ] NVFP4 throughput ≥ BF16 baseline on SM121 (FP4 tensor core benefit)
-- [ ] NVFP4 VRAM ≤3 GB (vs ~8 GB BF16) — massive headroom for context/batching
+- [ ] NVFP4 serves correctly on GB10 SM121 with working tool calls (`<tool_call>` XML)
+- [ ] NVFP4 output quality ≥95% match with BF16 baseline (citation comparison)
+- [ ] NVFP4 VRAM ≤3 GB (vs ~8 GB BF16) — 3× memory compression achieved
+- [ ] NVFP4 throughput characterized honestly (may be equal/slower than BF16 at small dims)
+
+### Phase 2–3 (Integration + Benchmark)
+- [ ] FastContext CLI works with local NVFP4 endpoint (Python 3.12+ via uv)
 - [ ] Async subagent integration dispatches and receives citations
 - [ ] ≥40% API token reduction on real coding tasks
-- [ ] Exploration latency <3s per query on NVFP4 GB10
+- [ ] Exploration latency characterized for NVFP4 GB10
+
+### Phase 4 (Publication)
 - [ ] Published repo + HF NVFP4 weights + HTML benchmark report
+- [ ] Model card credits all parties; no hardware lock-in
